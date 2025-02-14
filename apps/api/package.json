@@ -1,0 +1,33 @@
+{
+  "name": "api",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "lint": "eslint --ext .ts .",
+    "build-orm": "turbo run build --filter=@di/orm-util --no-cache",
+    "dev": "pnpm build-orm && tsx watch src/index.ts",
+    "build": "pnpm build-orm && tsc",
+    "docker": "docker compose up"
+  },
+  "devDependencies": {
+    "@di/eslint-config": "workspace:*",
+    "@di/orm-util": "workspace:*",
+    "@di/typescript-config": "workspace:*",
+    "@types/node": "^22.10.1",
+    "cross-env": "7.0.3",
+    "pino-pretty": "^11.3.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "@graphql-tools/graphql-file-loader": "^8.0.11",
+    "@graphql-tools/load": "^8.0.12",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.0.0",
+    "graphql": "^16.9.0",
+    "graphql-yoga": "^5.7.0"
+  },
+  "packageManager": "pnpm@7.0.0"
+}

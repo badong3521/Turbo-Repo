@@ -1,0 +1,286 @@
+type Query {
+  jpNews: [JpNews!]!
+  jpNewsBySlug(slug: String!): JpNews
+  jpDevelop: [JpDevelop!]!
+  jpCarousel: [JpCarousel!]!
+  jpTechStack: [JpTechStack!]!
+  jpMarquee: [JpMarquee!]!
+  jpServices: [JpServices!]!
+  jpAbout: [JpAbout!]!
+  jpFooter: [JpFooter!]!
+  jpNavigation: [JpNavigation!]!
+  jpAboutArticles: [jpAboutArticles]
+  jpAboutCompany: [jpAboutCompany!]!
+  jpServicePosts: [JpServicePost]
+  jpServicePostBySlug(slug: String!): JpServicePost
+  jpWorkList: [JpWorkList]
+  jpWorkListById(id: Int!): JpWorkList
+  jpRecruiterIntro: jpRecruiterIntro
+  jpRecruiterJobItem: [jpRecruiterJobItem!]!
+  jpRecruiterFeatures: [jpRecruiterFeatures!]!
+  jpRecruiterOverview: [jpRecruiterOverview!]!
+}
+
+type JpWorkList {
+  id: Int!
+  title: String
+  description: String
+  tags: [String]
+  directus_files: File
+}
+
+type JpServicePost {
+  id: Int!
+  slug: String
+  title: String
+  services_post_detail: [ServicePostDetail]
+}
+
+type ServicePostDetail {
+  id: Int!
+  title: String
+  description: String
+  reverse: Boolean
+  directus_files: File
+}
+
+#Recruiter Page
+type jpRecruiterIntro {
+  id: Int!
+  title: String
+  description: String
+}
+
+type jpRecruiterFeatures {
+  id: Int!
+  title: String
+  directus_files: File
+  description: String
+}
+
+type Mutation {
+  sendEmail(input: InputSendMail!): OutputSendMail!
+}
+
+type jpRecruiterJobItem {
+  id: Int!
+  links: Links
+  title: String
+}
+
+type jpRecruiterOverview {
+  id: Int!
+  directus_files: File
+  alt: String
+}
+
+#About Page
+type jpAboutCompany {
+  id: Int!
+  name: String
+  title: String
+  jp_about_company_detail: [jpAboutCompanyDetail]
+}
+
+type jpAboutCompanyDetail {
+  id: Int!
+  name: String
+}
+
+type jpAboutArticles {
+  id: Int!
+  title: String
+  description: String
+  directus_files: File
+  reverse: Boolean
+}
+
+#Home Page
+type JpNavigation {
+  id: Int!
+  title: String
+  language: String
+  links: Links
+  navigations_children: [JpNavigationChildren]
+}
+
+type JpNavigationChildren {
+  id: Int!
+  links: Links
+  title: String
+}
+type JpFooter {
+  id: Int!
+  footers_footer_item_social: [JpFooterJoinFoterItemSocial]
+  footers_footer_item_company: [JpFooterJoinFoterItemCompany]
+}
+
+type JpFooterJoinFoterItemCompany {
+  id: Int!
+  footer_item_company: JpFooterItemCompany
+}
+
+type JpFooterItemCompany {
+  id: Int!
+  directus_files: File
+  title: String
+  alt: String
+  footer_item_company_address: [JpFooterCompanyAddress]
+}
+
+type JpFooterCompanyAddress {
+  id: Int!
+  directus_files: File
+  alt: String
+  title: String
+}
+
+type JpFooterJoinFoterItemSocial {
+  id: Int!
+  footer_item_social: JpFooterItemSocial
+}
+
+type JpFooterItemSocial {
+  id: Int!
+  directus_files: File
+  links: Links
+  alt: String
+}
+
+type JpAbout {
+  id: Int!
+  directus_files: File
+  jp_about_item_image: [JpAboutItem]
+  jp_about_item_text: [JpAboutText]
+}
+
+type JpAboutItem {
+  id: Int!
+  directus_files: File
+  directus_files_jp_about_item_image_icon_srcTodirectus_files: File
+  main_text: String
+  hover_text: String
+}
+
+type JpAboutText {
+  id: Int!
+  title: String
+}
+
+type JpServices {
+  id: Int!
+  directus_files: File
+  title: String
+  content: String
+  links: Links
+  reverse: Boolean
+}
+
+type JpMarquee {
+  id: Int!
+  directus_files: File
+  alt: String
+  catetory: String
+}
+
+type JpTechStack {
+  id: Int
+  title: String
+  jp_techstack_image: [JpTechStackImage]
+}
+
+type JpTechStackImage {
+  id: Int
+  directus_files: File
+  alt: String
+}
+
+type JpCarousel {
+  id: Int!
+  directus_files: File
+  alt: String
+}
+
+# News Page
+type JpNews {
+  id: Int!
+  date_created: String
+  title: String
+  content: String
+  directus_files: File
+  slug: String!
+  tags: [String]
+  users: Users
+  author: String
+}
+
+type Users {
+  id: String
+  username: String
+  image: String
+  directus_files: File
+}
+
+type File {
+  id: String
+  filename_disk: String
+  title: String
+}
+
+type Links {
+  id: Int!
+  url: String!
+  slug: String
+}
+
+type JpDevelop {
+  id: Int!
+  title: String!
+  description: String
+  directus_files: File
+  url: String
+}
+
+enum InquiryTypeEnum {
+  Business
+  DXConsulting
+  DataAI
+  LegacyCodeConversion
+  BusinessAutomation
+  WebDevelopment
+  SystemDevelopment
+  MediaCoverage
+  Partnership
+}
+
+enum DocumentTypeEnum {
+  CompanyProfile
+  SystemDevelopment
+  DataScience
+  AIImageRecognition
+}
+
+enum ReasonToKnowEnum {
+  FoundByChance
+  Articles
+  SocialMedia
+  Others
+}
+
+input InputSendMail {
+  subject: String!
+  inquiryType: InquiryTypeEnum
+  name: String!
+  documentType: DocumentTypeEnum
+  rubyCharacter: String
+  company: String!
+  department: String!
+  phone: String!
+  email: String!
+  reasonToKnow: ReasonToKnowEnum!
+  inquiryDetails: String!
+}
+
+type OutputSendMail {
+  message: String!
+}

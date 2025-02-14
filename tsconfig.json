@@ -1,0 +1,6 @@
+{
+  "extends": "@di/config-typescript/base.json",
+  "compilerOptions": {},
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

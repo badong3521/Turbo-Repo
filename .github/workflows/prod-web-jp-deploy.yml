@@ -1,0 +1,74 @@
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+      - feat/ba_dong/page_contact_and_survey
+    # paths:
+    #   - "apps/web-jp"
+
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+jobs:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      # Install dependencies
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Create .env file in ORM
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > ./packages/orm-util/.env
+
+      - name: Create .env file in Web-JP
+        run: |
+          echo "NEXT_PUBLIC_GRAPHQL_ENDPOINT=${{ secrets.NEXT_PUBLIC_GRAPHQL_ENDPOINT }}" > ./apps/web-jp/.env
+          echo "NEXT_PUBLIC_IMAGE_ENDPOINT=${{ secrets.NEXT_PUBLIC_IMAGE_ENDPOINT }}" >> ./apps/web-jp/.env
+
+      # Prune the workspace
+      - name: Prune workspace
+        run: pnpm turbo prune web-jp
+
+      # Build the project
+      - name: Build the project
+        run: |
+          pnpm build --filter=web-jp
+
+      - name: Build And Deploy
+        id: builddeploy
+        uses: azure/static-web-apps-deploy@latest
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_VICTOR }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for GitHub integrations (i.e. PR comments)
+          action: "upload"
+          app_location: "apps/web-jp/out" # App source code path
+          api_location: "" # Api source code path - optional
+          skip_app_build: true
+        env: # Add environment variables here
+          is_static_export: true
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_VICTOR }}
+          action: "close"

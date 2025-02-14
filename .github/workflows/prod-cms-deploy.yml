@@ -1,0 +1,89 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/cms/schema.json'
+
+permissions:
+  pages: write
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        run: |
+          echo "${{ secrets.AZURE_PASSWORD }}" | docker login ${{ secrets.AZURE_LINK }} --username ${{ secrets.AZURE_USERNAME }} --password-stdin
+        
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/cms:latest -f ./apps/cms/Dockerfile ./apps/cms
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.ACR_NAME }}.azurecr.io/cms:latest
+
+  deploy:
+      runs-on: ubuntu-latest
+      needs: build
+      environment:
+        name: 'Production'
+        url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Install pnpm
+          run: npm install -g pnpm
+
+        - name: "Install tsx"
+          run: npm install -g tsx
+
+        - name: "Install dependencies"
+          run: pnpm install
+
+        - name: Log in to Azure
+          run: |
+            echo "${{ secrets.AZURE_PASSWORD }}" | docker login ${{ secrets.AZURE_LINK }} --username ${{ secrets.AZURE_USERNAME }} --password-stdin
+
+        - name: 'Deploy to Azure Web App'
+          uses: azure/webapps-deploy@v3
+          id: deploy-to-webapp
+          with:
+            app-name: 'di-landing-cms'
+            slot-name: 'Production'
+            publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+            images: ${{ secrets.ACR_NAME }}.azurecr.io/cms:latest
+
+        - name: "echo env"
+          run: echo ${{ env.ADMIN_URL }}
+
+
+        - name: Import schema
+          working-directory: ./apps/cms
+          env:
+            ADMIN_URL: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+            ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+            ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          run: pnpm import-schema
+
+  notify-teams:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    steps:
+      - name: 'Post deployment status'
+        uses: Data-Impact-VN/DI-GhActionTeamNotify@master
+        if: always()
+        with:
+          webhook_url: ${{ secrets.MSTEAMS_WEBHOOK }}
+          job: ${{ toJson(job) }}
+          steps: ${{ toJson(steps) }}
